@@ -32,9 +32,9 @@ body, html {
     --text-muted: #6c757d;
     --border-color: #dee2e6;
     --border-light: #e9ecef;
-    --accent-primary: #28a745;
-    --accent-secondary: #fd7e14;
-    --accent-info: #17a2b8;
+    --accent-primary: #dc3545;
+    --accent-secondary: #e74c3c;
+    --accent-info: #c82333;
     --shadow-light: rgba(0,0,0,0.05);
     --shadow-medium: rgba(0,0,0,0.1);
     --error-bg: #f8d7da;
@@ -52,9 +52,9 @@ body, html {
     --text-muted: #a0a0a0;
     --border-color: #404040;
     --border-light: #505050;
-    --accent-primary: #4ade80;
-    --accent-secondary: #fb923c;
-    --accent-info: #06b6d4;
+    --accent-primary: #ff6b6b;
+    --accent-secondary: #e74c3c;
+    --accent-info: #dc3545;
     --shadow-light: rgba(0,0,0,0.3);
     --shadow-medium: rgba(0,0,0,0.5);
     --error-bg: #2d1b1b;
@@ -87,7 +87,38 @@ body {
 
 /* Header Styles */
 header {
-    margin-bottom: 32px;
+    margin-bottom: 20px;
+}
+
+/* DNS Message Box */
+.dns-message-box {
+    margin: 20px auto 32px auto;
+    max-width: 600px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 2px solid var(--accent-primary);
+    box-shadow: 0 4px 12px var(--shadow-light);
+    position: relative;
+}
+
+.dns-message-box::before {
+    content: '💬';
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: var(--bg-secondary);
+    padding: 0 8px;
+    font-size: 1.2rem;
+}
+
+.dns-message-box p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-style: italic;
+    text-align: center;
 }
 
 .header-top {
@@ -132,8 +163,45 @@ header {
 .header-controls {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
 }
+
+.red-arrow {
+    color: #ff0000;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.curl-btn {
+    background: var(--accent-primary);
+    color: white;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.curl-btn:hover {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+
 
 .theme-toggle {
     width: 44px;
@@ -151,10 +219,11 @@ header {
 }
 
 .theme-toggle:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-    transform: translateY(-1px);
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
 }
+
+
 
 .theme-toggle .moon-icon {
     display: none;
@@ -239,10 +308,11 @@ main {
 }
 
 .input-group button:hover {
-    background: #218838;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
 }
+
+
 
 .input-group button:active {
     transform: translateY(0);
@@ -438,11 +508,12 @@ main {
     letter-spacing: 0.3px;
 }
 
-.csv-btn:hover:not(:disabled) {
-    background: #e8690b;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(253, 126, 20, 0.3);
+.csv-btn:hover {
+    outline: 2px solid var(--accent-secondary);
+    outline-offset: 2px;
 }
+
+
 
 .csv-btn:active {
     transform: translateY(0);
@@ -581,9 +652,7 @@ main {
     min-width: 80px;
 }
 
-.dns-table tbody tr:hover {
-    background: var(--bg-secondary);
-}
+
 
 .dns-table tbody tr:last-child td {
     border-bottom: none;
@@ -650,28 +719,25 @@ main {
 /* Record Sections (Card View) */
 .record-sections {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
     width: 100%;
     overflow: hidden;
 }
 
 .record-section {
     background: var(--bg-primary);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 6px;
+    padding: 12px;
     border: 1px solid var(--border-light);
-    box-shadow: 0 2px 8px var(--shadow-light);
+    box-shadow: 0 1px 4px var(--shadow-light);
     transition: all 0.2s ease;
     overflow: hidden;
     word-wrap: break-word;
     min-width: 0;
 }
 
-.record-section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px var(--shadow-medium);
-}
+
 
 .record-section.hidden {
     display: none;
@@ -679,51 +745,52 @@ main {
 
 .record-section h3 {
     color: var(--text-primary);
-    margin-bottom: 20px;
-    font-size: 1.1rem;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-size: 0.9rem;
 }
 
 .record-section h3::before {
     content: '';
-    width: 4px;
-    height: 20px;
-    background: var(--accent-primary);
+    width: 3px;
+    height: 16px;
     border-radius: 2px;
 }
+
+/* Color coding for different record types */
+.record-section:nth-child(1) h3::before { background: #2196f3; } /* A Records - Blue */
+.record-section:nth-child(2) h3::before { background: #9c27b0; } /* AAAA Records - Purple */
+.record-section:nth-child(3) h3::before { background: #4caf50; } /* MX Records - Green */
+.record-section:nth-child(4) h3::before { background: #ff9800; } /* NS Records - Orange */
+.record-section:nth-child(5) h3::before { background: #e91e63; } /* TXT Records - Pink */
+.record-section:nth-child(6) h3::before { background: #00bcd4; } /* CNAME Records - Cyan */
 
 .record-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
 }
 
 .record-item {
     background: var(--bg-secondary);
-    padding: 16px 20px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
     border: 1px solid var(--border-light);
     transition: all 0.2s ease;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    min-height: 60px;
+    align-items: center;
+    gap: 12px;
+    min-height: 36px;
     overflow: hidden;
 }
 
-.record-item:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--accent-primary);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px var(--shadow-light);
-}
+
 
 .record-item.filtered {
     display: none;
@@ -733,28 +800,29 @@ main {
     font-family: 'SF Mono', 'Monaco', monospace;
     font-weight: 500;
     color: var(--text-primary);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     word-break: break-all;
     overflow-wrap: break-word;
     flex: 1;
     min-width: 0;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .record-meta {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     display: flex;
-    gap: 16px;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .record-meta span {
     background: var(--bg-tertiary);
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 2px 6px;
+    border-radius: 3px;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
-    font-size: 0.7rem;
+    letter-spacing: 0.2px;
+    font-size: 0.65rem;
     font-weight: 500;
 }
 

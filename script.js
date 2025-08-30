@@ -10,7 +10,6 @@ class DNSLookup {
         this.domainName = document.getElementById('domainName');
         this.errorMessage = document.getElementById('errorMessage');
         this.downloadCsvBtn = document.getElementById('downloadCsv');
-        this.recordSearch = document.getElementById('recordSearch');
         this.themeToggle = document.getElementById('themeToggle');
         this.recordCount = document.getElementById('recordCount');
         this.lastUpdated = document.getElementById('lastUpdated');
@@ -24,14 +23,6 @@ class DNSLookup {
         this.nsRecords = document.getElementById('nsRecords');
         this.txtRecords = document.getElementById('txtRecords');
         this.cnameRecords = document.getElementById('cnameRecords');
-        
-        // Toggle controls
-        this.showAToggle = document.getElementById('showA');
-        this.showAAAAToggle = document.getElementById('showAAAA');
-        this.showMXToggle = document.getElementById('showMX');
-        this.showNSToggle = document.getElementById('showNS');
-        this.showTXTToggle = document.getElementById('showTXT');
-        this.showCNAMEToggle = document.getElementById('showCNAME');
         
         // Record sections
         this.aSection = document.getElementById('aSection');
@@ -77,18 +68,6 @@ class DNSLookup {
         
         this.themeToggle.addEventListener('click', () => {
             this.toggleTheme();
-        });
-        
-        // Add event listeners for all toggles
-        [this.showAToggle, this.showAAAAToggle, this.showMXToggle, 
-         this.showNSToggle, this.showTXTToggle, this.showCNAMEToggle].forEach(toggle => {
-            toggle.addEventListener('change', () => {
-                this.applyFilters();
-            });
-        });
-        
-        this.recordSearch.addEventListener('input', () => {
-            this.applyFilters();
         });
     }
     
@@ -247,8 +226,6 @@ class DNSLookup {
         this.results.classList.remove('hidden');
         this.controls.classList.remove('hidden');
         this.downloadCsvBtn.disabled = false;
-        
-        this.applyFilters();
     }
     
     populateTable() {
@@ -375,58 +352,7 @@ class DNSLookup {
         }
     }
     
-    applyFilters() {
-        const toggles = {
-            A: this.showAToggle.checked,
-            AAAA: this.showAAAAToggle.checked,
-            MX: this.showMXToggle.checked,
-            NS: this.showNSToggle.checked,
-            TXT: this.showTXTToggle.checked,
-            CNAME: this.showCNAMEToggle.checked
-        };
-        
-        const sections = {
-            A: this.aSection,
-            AAAA: this.aaaaSection,
-            MX: this.mxSection,
-            NS: this.nsSection,
-            TXT: this.txtSection,
-            CNAME: this.cnameSection
-        };
-        
-        const searchTerm = this.recordSearch.value.toLowerCase().trim();
-        
-        // Toggle sections based on checkboxes
-        Object.keys(toggles).forEach(type => {
-            const section = sections[type];
-            if (section) {
-                section.style.display = toggles[type] ? 'block' : 'none';
-            }
-        });
-        
-        // Filter individual records by search term
-        const allRecords = document.querySelectorAll('.record-item');
-        allRecords.forEach(record => {
-            const value = record.dataset.value || record.textContent;
-            const matchesSearch = !searchTerm || value.toLowerCase().includes(searchTerm);
-            
-            if (matchesSearch) {
-                record.classList.remove('filtered');
-                // Highlight matching text in the value div
-                const valueDiv = record.querySelector('.record-value');
-                if (valueDiv && searchTerm) {
-                    const originalText = record.dataset.value || valueDiv.textContent;
-                    const regex = new RegExp(`(${searchTerm})`, 'gi');
-                    const highlighted = originalText.replace(regex, '<mark style="background: #28a745; color: white; padding: 1px 3px; border-radius: 2px;">$1</mark>');
-                    valueDiv.innerHTML = highlighted;
-                } else if (valueDiv) {
-                    valueDiv.textContent = record.dataset.value || valueDiv.textContent;
-                }
-            } else {
-                record.classList.add('filtered');
-            }
-        });
-    }
+
     
     downloadCSV() {
         if (!this.currentDomain) return;
