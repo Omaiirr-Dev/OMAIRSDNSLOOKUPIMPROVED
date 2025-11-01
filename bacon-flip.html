@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bacon Flip - Physics Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            width: 90vw;
+            max-width: 1200px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-title {
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .score-board {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .flip-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .flip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.5);
+        }
+
+        .flip-btn:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.5);
+        }
+
+        .power-meter {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            width: 60px;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .power-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0%;
+            background: linear-gradient(180deg, #f093fb 0%, #f5576c 50%, #ff6b6b 100%);
+            transition: height 0.1s ease;
+            border-radius: 30px;
+        }
+
+        .power-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 0.9em;
+            font-weight: bold;
+            white-space: nowrap;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            color: white;
+            text-align: center;
+            z-index: 100;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .instructions.hidden {
+            display: none;
+        }
+
+        .instructions h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #f5576c;
+        }
+
+        .instructions p {
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.5);
+        }
+
+        .combo-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 3em;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            z-index: 50;
+            animation: popupAnim 1s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes popupAnim {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        @keyframes particleAnim {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">🥓 Bacon Flip</div>
+            <div class="score-board">
+                <div class="score-item">
+                    <div class="score-label">Score</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Combo</div>
+                    <div class="score-value" id="combo">0x</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Best</div>
+                    <div class="score-value" id="highScore">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions" id="instructions">
+            <h2>🥓 Bacon Flip 🥓</h2>
+            <p>🎯 Land the bacon on the pans to score points!</p>
+            <p>⚡ Hold SPACE or click FLIP to charge power</p>
+            <p>🔥 Build combos for higher scores!</p>
+            <p>💯 Perfect landings give bonus points!</p>
+            <button class="start-btn" onclick="startGame()">Start Game</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="power-meter">
+            <div class="power-label">Power</div>
+            <div class="power-fill" id="powerFill"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn flip-btn" id="flipBtn">Flip! (Space)</button>
+            <button class="btn reset-btn" id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <script src="bacon-game.js"></script>
+</body>
+</html>
