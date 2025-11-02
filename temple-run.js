@@ -141,71 +141,153 @@ function init() {
         return;
     }
 
-    if (window.updateLoading) {
-        updateLoading('Creating 3D Scene...', 'Building game world...', 90);
+    try {
+        if (window.updateLoading) {
+            updateLoading('Creating 3D Scene...', 'Building game world...', 90);
+        }
+
+        // Create scene
+        console.log('Creating scene...');
+        scene = new Scene();
+        updateBiome(currentBiome);
+        console.log('✅ Scene created');
+
+        // Create camera
+        console.log('Creating camera...');
+        camera = new PerspectiveCamera(
+            70,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(0, 5, PLAYER_Z + 5);
+        camera.lookAt(0, 2, PLAYER_Z - 15);
+        console.log('✅ Camera created');
+
+        // Create renderer
+        console.log('Creating renderer...');
+        const canvas = document.getElementById('gameCanvas');
+        if (!canvas) {
+            throw new Error('Canvas element not found!');
+        }
+
+        renderer = new WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: false
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        console.log('✅ Renderer created');
+
+        // Clock for smooth animations
+        clock = new Clock();
+        console.log('✅ Clock created');
+
+        if (window.updateLoading) {
+            updateLoading('Setting up lighting...', 'Adding lights to scene...', 92);
+        }
+
+        // Lighting setup
+        console.log('Setting up lighting...');
+        setupLighting();
+        console.log('✅ Lighting setup complete');
+
+        if (window.updateLoading) {
+            updateLoading('Creating player...', 'Generating character model...', 94);
+        }
+
+        // Create player
+        console.log('Creating player...');
+        createPlayer();
+        console.log('✅ Player created');
+
+        if (window.updateLoading) {
+            updateLoading('Building track...', 'Generating ground segments...', 96);
+        }
+
+        // Create initial ground
+        console.log('Creating ground segments...');
+        for (let i = 0; i < SEGMENTS_VISIBLE; i++) {
+            createGroundSegment(-i * SEGMENT_LENGTH);
+        }
+        console.log('✅ Ground segments created');
+
+    } catch (error) {
+        console.error('❌ Error during initialization:', error);
+        if (window.updateLoading) {
+            updateLoading('❌ Initialization Error', error.message, 0);
+        }
+
+        document.getElementById('loadingScreen').innerHTML = `
+            <div class="menu-title">❌ Initialization Failed</div>
+            <p style="color: var(--primary-pink); text-align: center; max-width: 600px; margin: 20px auto; font-size: 1.2em;">
+                ${error.message}
+            </p>
+            <div style="text-align: left; max-width: 600px; margin: 20px auto; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                <h3 style="color: var(--primary-cyan); margin-bottom: 15px;">Error Details:</h3>
+                <pre style="color: white; overflow-x: auto; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 5px;">${error.stack || error.message}</pre>
+                <h3 style="color: var(--primary-cyan); margin: 20px 0 10px;">Possible Solutions:</h3>
+                <p style="margin: 10px 0;">1. Check if your browser supports WebGL</p>
+                <p style="margin: 10px 0;">2. Try a different browser (Chrome, Firefox, Edge)</p>
+                <p style="margin: 10px 0;">3. Update your graphics drivers</p>
+                <p style="margin: 10px 0;">4. Enable hardware acceleration in browser settings</p>
+            </div>
+            <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">Try Again</button>
+        `;
+        return;
     }
 
-    // Create scene
-    scene = new Scene();
-    updateBiome(currentBiome);
+    try {
+        if (window.updateLoading) {
+            updateLoading('Setting up controls...', 'Initializing event listeners...', 98);
+        }
 
-    // Create camera
-    camera = new PerspectiveCamera(
-        70,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-    );
-    camera.position.set(0, 5, PLAYER_Z + 5);
-    camera.lookAt(0, 2, PLAYER_Z - 15);
+        // Event listeners
+        console.log('Setting up event listeners...');
+        setupEventListeners();
+        console.log('✅ Event listeners setup');
 
-    // Create renderer
-    const canvas = document.getElementById('gameCanvas');
-    renderer = new WebGLRenderer({
-        canvas: canvas,
-        antialias: true,
-        alpha: false
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // Update UI
+        console.log('Updating UI...');
+        updateAllUI();
+        console.log('✅ UI updated');
 
-    // Clock for smooth animations
-    clock = new Clock();
+        console.log('✅ Game initialized successfully!');
 
-    // Lighting setup
-    setupLighting();
+        // Complete loading and show menu
+        if (window.updateLoading) {
+            updateLoading('Ready!', 'Starting game...', 100);
+        }
 
-    // Create player
-    createPlayer();
+        setTimeout(() => {
+            console.log('🎮 Showing start menu...');
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('startMenu').classList.remove('hidden');
+        }, 800);
 
-    // Create initial ground
-    for (let i = 0; i < SEGMENTS_VISIBLE; i++) {
-        createGroundSegment(-i * SEGMENT_LENGTH);
+        // Start animation loop
+        console.log('Starting animation loop...');
+        animate();
+        console.log('✅ Animation loop started');
+
+    } catch (error) {
+        console.error('❌ Error during final setup:', error);
+        if (window.updateLoading) {
+            updateLoading('❌ Setup Error', error.message, 0);
+        }
+
+        document.getElementById('loadingScreen').innerHTML = `
+            <div class="menu-title">❌ Setup Failed</div>
+            <p style="color: var(--primary-pink); text-align: center; max-width: 600px; margin: 20px auto;">
+                Error during final setup: ${error.message}
+            </p>
+            <pre style="color: white; overflow-x: auto; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 5px; max-width: 600px; margin: 20px auto;">${error.stack || error.message}</pre>
+            <button onclick="location.reload()" class="btn btn-primary">Try Again</button>
+        `;
     }
-
-    // Event listeners
-    setupEventListeners();
-
-    // Update UI
-    updateAllUI();
-
-    console.log('✅ Game initialized successfully!');
-
-    // Complete loading and show menu
-    if (window.updateLoading) {
-        updateLoading('Ready!', 'Starting game...', 100);
-    }
-
-    setTimeout(() => {
-        console.log('🎮 Showing start menu...');
-        document.getElementById('loadingScreen').classList.add('hidden');
-        document.getElementById('startMenu').classList.remove('hidden');
-    }, 800);
-
-    // Start animation loop
-    animate();
 }
 
 // Setup lighting
