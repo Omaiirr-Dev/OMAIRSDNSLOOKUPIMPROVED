@@ -1060,7 +1060,61 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="temple-run.js"></script>
+    <script>
+        // Try multiple CDN sources for Three.js
+        (function loadThreeJS() {
+            const cdns = [
+                './three.min.js', // Try local file first
+                'three.min.js',   // Try current directory
+                'https://unpkg.com/three@0.128.0/build/three.min.js',
+                'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
+            ];
+
+            let currentIndex = 0;
+
+            function tryLoadScript() {
+                if (currentIndex >= cdns.length) {
+                    document.getElementById('loadingScreen').innerHTML = `
+                        <div class="menu-title">Loading Failed</div>
+                        <p style="color: var(--primary-cyan); text-align: center; max-width: 600px; margin: 20px auto;">
+                            Could not load Three.js library. Please check your internet connection.<br><br>
+                            Or download three.min.js manually from:<br>
+                            <a href="https://threejs.org/build/three.min.js" style="color: var(--primary-pink);">
+                                https://threejs.org/build/three.min.js
+                            </a><br>
+                            and place it in the same folder as this HTML file.
+                        </p>`;
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = cdns[currentIndex];
+                script.onload = () => {
+                    console.log('Three.js loaded from:', cdns[currentIndex]);
+                    loadGameScript();
+                };
+                script.onerror = () => {
+                    console.warn('Failed to load from:', cdns[currentIndex]);
+                    currentIndex++;
+                    tryLoadScript();
+                };
+                document.head.appendChild(script);
+            }
+
+            function loadGameScript() {
+                const gameScript = document.createElement('script');
+                gameScript.src = 'temple-run.js';
+                gameScript.onerror = () => {
+                    document.getElementById('loadingScreen').innerHTML = `
+                        <div class="menu-title">Error</div>
+                        <p style="color: var(--primary-cyan);">Could not load temple-run.js</p>`;
+                };
+                document.body.appendChild(gameScript);
+            }
+
+            tryLoadScript();
+        })();
+    </script>
 </body>
 </html>
