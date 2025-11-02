@@ -119,21 +119,31 @@ let keys = {};
 
 // Initialize game
 function init() {
+    console.log('🎮 Initializing game...');
+
+    // Update loading progress
+    if (window.updateLoading) {
+        updateLoading('Initializing Three.js...', 'Setting up classes...', 85);
+    }
+
     // Initialize Three.js classes
     if (typeof THREE !== 'undefined') {
         ({ Scene, PerspectiveCamera, WebGLRenderer, AmbientLight, DirectionalLight, HemisphereLight, PointLight,
             Mesh, Group, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, OctahedronGeometry, TetrahedronGeometry,
             MeshPhongMaterial, MeshStandardMaterial, MeshBasicMaterial,
             Fog, Color, Box3, Vector3, Clock } = THREE);
+        console.log('✅ Three.js classes initialized');
     } else {
-        console.error('THREE.js failed to load!');
+        console.error('❌ THREE.js is not defined!');
+        if (window.updateLoading) {
+            updateLoading('❌ Error', 'THREE.js not found', 0);
+        }
         return;
     }
 
-    // Hide loading screen
-    setTimeout(() => {
-        document.getElementById('loadingScreen').classList.add('hidden');
-    }, 2000);
+    if (window.updateLoading) {
+        updateLoading('Creating 3D Scene...', 'Building game world...', 90);
+    }
 
     // Create scene
     scene = new Scene();
@@ -180,6 +190,19 @@ function init() {
 
     // Update UI
     updateAllUI();
+
+    console.log('✅ Game initialized successfully!');
+
+    // Complete loading and show menu
+    if (window.updateLoading) {
+        updateLoading('Ready!', 'Starting game...', 100);
+    }
+
+    setTimeout(() => {
+        console.log('🎮 Showing start menu...');
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('startMenu').classList.remove('hidden');
+    }, 800);
 
     // Start animation loop
     animate();
