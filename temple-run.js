@@ -121,11 +121,6 @@ let keys = {};
 function init() {
     console.log('🎮 Initializing game...');
 
-    // Update loading progress
-    if (window.updateLoading) {
-        updateLoading('Initializing Three.js...', 'Setting up classes...', 85);
-    }
-
     // Initialize Three.js classes
     if (typeof THREE !== 'undefined') {
         ({ Scene, PerspectiveCamera, WebGLRenderer, AmbientLight, DirectionalLight, HemisphereLight, PointLight,
@@ -135,16 +130,11 @@ function init() {
         console.log('✅ Three.js classes initialized');
     } else {
         console.error('❌ THREE.js is not defined!');
-        if (window.updateLoading) {
-            updateLoading('❌ Error', 'THREE.js not found', 0);
-        }
+        alert('THREE.js failed to load! Check console for details.');
         return;
     }
 
     try {
-        if (window.updateLoading) {
-            updateLoading('Creating 3D Scene...', 'Building game world...', 90);
-        }
 
         // Create scene
         console.log('Creating scene...');
@@ -186,27 +176,15 @@ function init() {
         clock = new Clock();
         console.log('✅ Clock created');
 
-        if (window.updateLoading) {
-            updateLoading('Setting up lighting...', 'Adding lights to scene...', 92);
-        }
-
         // Lighting setup
         console.log('Setting up lighting...');
         setupLighting();
         console.log('✅ Lighting setup complete');
 
-        if (window.updateLoading) {
-            updateLoading('Creating player...', 'Generating character model...', 94);
-        }
-
         // Create player
         console.log('Creating player...');
         createPlayer();
         console.log('✅ Player created');
-
-        if (window.updateLoading) {
-            updateLoading('Building track...', 'Generating ground segments...', 96);
-        }
 
         // Create initial ground
         console.log('Creating ground segments...');
@@ -217,34 +195,11 @@ function init() {
 
     } catch (error) {
         console.error('❌ Error during initialization:', error);
-        if (window.updateLoading) {
-            updateLoading('❌ Initialization Error', error.message, 0);
-        }
-
-        document.getElementById('loadingScreen').innerHTML = `
-            <div class="menu-title">❌ Initialization Failed</div>
-            <p style="color: var(--primary-pink); text-align: center; max-width: 600px; margin: 20px auto; font-size: 1.2em;">
-                ${error.message}
-            </p>
-            <div style="text-align: left; max-width: 600px; margin: 20px auto; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
-                <h3 style="color: var(--primary-cyan); margin-bottom: 15px;">Error Details:</h3>
-                <pre style="color: white; overflow-x: auto; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 5px;">${error.stack || error.message}</pre>
-                <h3 style="color: var(--primary-cyan); margin: 20px 0 10px;">Possible Solutions:</h3>
-                <p style="margin: 10px 0;">1. Check if your browser supports WebGL</p>
-                <p style="margin: 10px 0;">2. Try a different browser (Chrome, Firefox, Edge)</p>
-                <p style="margin: 10px 0;">3. Update your graphics drivers</p>
-                <p style="margin: 10px 0;">4. Enable hardware acceleration in browser settings</p>
-            </div>
-            <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">Try Again</button>
-        `;
+        alert('Game initialization failed: ' + error.message + '\n\nCheck console (F12) for details.');
         return;
     }
 
     try {
-        if (window.updateLoading) {
-            updateLoading('Setting up controls...', 'Initializing event listeners...', 98);
-        }
-
         // Event listeners
         console.log('Setting up event listeners...');
         setupEventListeners();
@@ -257,36 +212,19 @@ function init() {
 
         console.log('✅ Game initialized successfully!');
 
-        // Complete loading and show menu
-        if (window.updateLoading) {
-            updateLoading('Ready!', 'Starting game...', 100);
-        }
-
-        setTimeout(() => {
-            console.log('🎮 Showing start menu...');
-            document.getElementById('loadingScreen').classList.add('hidden');
-            document.getElementById('startMenu').classList.remove('hidden');
-        }, 800);
+        // Show start menu immediately
+        console.log('🎮 Showing start menu...');
+        document.getElementById('startMenu').classList.remove('hidden');
 
         // Start animation loop
         console.log('Starting animation loop...');
         animate();
         console.log('✅ Animation loop started');
+        console.log('🎉 Game ready to play!');
 
     } catch (error) {
         console.error('❌ Error during final setup:', error);
-        if (window.updateLoading) {
-            updateLoading('❌ Setup Error', error.message, 0);
-        }
-
-        document.getElementById('loadingScreen').innerHTML = `
-            <div class="menu-title">❌ Setup Failed</div>
-            <p style="color: var(--primary-pink); text-align: center; max-width: 600px; margin: 20px auto;">
-                Error during final setup: ${error.message}
-            </p>
-            <pre style="color: white; overflow-x: auto; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 5px; max-width: 600px; margin: 20px auto;">${error.stack || error.message}</pre>
-            <button onclick="location.reload()" class="btn btn-primary">Try Again</button>
-        `;
+        alert('Game setup failed: ' + error.message + '\n\nCheck console (F12) for details.');
     }
 }
 
