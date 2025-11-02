@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temple Run 3D - Endless Runner</title>
+    <title>RETROWAVE RUNNER - Synthwave Endless Adventure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-pink: #ff006e;
+            --primary-purple: #8338ec;
+            --primary-blue: #3a86ff;
+            --primary-cyan: #06ffa5;
+            --primary-yellow: #ffbe0b;
+            --bg-dark: #0a0a0f;
+            --bg-darker: #050507;
+            --glass-bg: rgba(131, 56, 236, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,74 +25,130 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Orbitron', monospace;
             overflow: hidden;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: var(--bg-dark);
+            color: white;
+        }
+
+        body.light-mode {
+            --bg-dark: #f0f0f5;
+            --bg-darker: #e0e0eb;
+            --glass-bg: rgba(131, 56, 236, 0.05);
+            --primary-pink: #d90062;
+            --primary-purple: #6b2dc4;
+            --primary-blue: #2e6dd4;
         }
 
         #gameCanvas {
             display: block;
             width: 100vw;
             height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 0, 0, 0.1) 51%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 999;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
         }
 
         .hud {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            pointer-events: none;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
             z-index: 100;
+            pointer-events: none;
         }
 
         .hud-item {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 15px 25px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid var(--glass-border);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hud-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-cyan), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { left: -100%; }
+            50% { left: 100%; }
         }
 
         .hud-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9em;
+            color: var(--primary-cyan);
+            font-size: 0.7em;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             margin-bottom: 5px;
+            text-shadow: 0 0 10px var(--primary-cyan);
         }
 
         .hud-value {
-            color: white;
-            font-size: 2em;
+            font-size: 1.8em;
             font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .coins {
-            color: #ffd700;
-        }
-
-        .distance {
-            color: #4facfe;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px var(--primary-purple));
         }
 
         .menu-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(30px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 200;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .menu-overlay.hidden {
@@ -87,119 +156,388 @@
         }
 
         .menu-content {
-            text-align: center;
-            color: white;
-            max-width: 600px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
             padding: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border-radius: 20px;
+            border: 2px solid var(--glass-border);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.8),
+                inset 0 0 50px rgba(131, 56, 236, 0.2);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .menu-title {
-            font-size: 4em;
-            font-weight: bold;
+            font-size: 3.5em;
+            font-weight: 900;
+            text-align: center;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple), var(--primary-blue), var(--primary-cyan));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 0 30px var(--primary-purple);
+            animation: glow 2s ease-in-out infinite;
+            letter-spacing: 3px;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px var(--primary-purple)); }
+            50% { filter: drop-shadow(0 0 40px var(--primary-cyan)); }
         }
 
         .menu-subtitle {
-            font-size: 1.5em;
-            margin-bottom: 30px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .menu-instructions {
-            margin: 30px 0;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            text-align: left;
-        }
-
-        .instruction-item {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            font-size: 1.1em;
-        }
-
-        .instruction-key {
-            display: inline-block;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            margin-right: 15px;
-            min-width: 80px;
             text-align: center;
-            font-weight: bold;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: var(--primary-cyan);
+            text-shadow: 0 0 10px var(--primary-cyan);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--glass-border);
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Orbitron', monospace;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            pointer-events: all;
+        }
+
+        .tab.active {
+            color: var(--primary-cyan);
+            border-bottom-color: var(--primary-cyan);
+            text-shadow: 0 0 10px var(--primary-cyan);
+        }
+
+        .tab:hover {
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .character-option {
+            aspect-ratio: 1;
+            background: var(--glass-bg);
+            border: 3px solid var(--glass-border);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: all;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .character-option::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, var(--primary-purple) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .character-option:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        .character-option:hover {
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 30px var(--primary-cyan);
+            transform: translateY(-5px);
+        }
+
+        .character-option.selected {
+            border-color: var(--primary-pink);
+            box-shadow: 0 0 30px var(--primary-pink);
+            background: linear-gradient(135deg, rgba(255, 0, 110, 0.2), rgba(131, 56, 236, 0.2));
+        }
+
+        .character-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .character-name {
+            font-size: 0.9em;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .biome-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .biome-option {
+            aspect-ratio: 16/9;
+            background: var(--glass-bg);
+            border: 3px solid var(--glass-border);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: all;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .biome-option:hover {
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 30px var(--primary-cyan);
+            transform: translateY(-5px);
+        }
+
+        .biome-option.selected {
+            border-color: var(--primary-pink);
+            box-shadow: 0 0 30px var(--primary-pink);
+        }
+
+        .settings-section {
+            margin: 30px 0;
+        }
+
+        .settings-title {
+            font-size: 1.3em;
+            color: var(--primary-cyan);
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--primary-cyan);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            pointer-events: all;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--glass-border);
+            transition: 0.4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            box-shadow: 0 0 20px var(--primary-purple);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(28px);
+        }
+
+        .slider-input {
+            width: 200px;
+            pointer-events: all;
+        }
+
+        .slider-input input {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: var(--glass-bg);
+            outline: none;
+            border: 2px solid var(--glass-border);
+        }
+
+        .slider-input input::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--primary-purple);
         }
 
         .btn {
-            padding: 20px 50px;
-            font-size: 1.5em;
+            padding: 18px 45px;
+            font-size: 1.3em;
             font-weight: bold;
-            border: none;
-            border-radius: 50px;
+            font-family: 'Orbitron', monospace;
+            border: 3px solid;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             text-transform: uppercase;
             letter-spacing: 2px;
             margin: 10px;
             pointer-events: all;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
+        .btn:hover::before {
+            width: 300%;
+            height: 300%;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            border-color: var(--primary-purple);
             color: white;
+            box-shadow: 0 5px 25px rgba(131, 56, 236, 0.5);
         }
 
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 10px 40px rgba(131, 56, 236, 0.8);
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
+            background: transparent;
+            border-color: var(--primary-cyan);
+            color: var(--primary-cyan);
         }
 
         .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(245, 87, 108, 0.5);
+            background: var(--primary-cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 10px 40px rgba(6, 255, 165, 0.5);
         }
 
-        .game-over-stats {
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
             margin: 30px 0;
+        }
+
+        .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
+            margin: 30px 0;
         }
 
         .stat-box {
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
             border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            box-shadow: inset 0 0 30px rgba(131, 56, 236, 0.1);
         }
 
         .stat-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1em;
+            color: var(--primary-cyan);
+            font-size: 0.9em;
             margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--primary-cyan);
         }
 
         .stat-value {
-            color: white;
             font-size: 2.5em;
             font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .controls-hint {
@@ -207,106 +545,251 @@
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 15px 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
             border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--glass-border);
             color: white;
             font-size: 1.1em;
             z-index: 100;
             animation: pulse 2s infinite;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(-50%) translateY(-5px);
+                opacity: 0.8;
+            }
         }
 
         .controls-hint.hidden {
             display: none;
         }
 
-        .pause-btn {
+        .powerup-indicator {
+            position: absolute;
+            top: 120px;
+            right: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid var(--glass-border);
+            z-index: 100;
+            min-width: 150px;
+        }
+
+        .powerup-indicator.hidden {
+            display: none;
+        }
+
+        .powerup-name {
+            color: var(--primary-yellow);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px var(--primary-yellow);
+        }
+
+        .powerup-timer {
+            height: 6px;
+            background: var(--glass-bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .powerup-timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-yellow), var(--primary-pink));
+            transition: width 0.1s linear;
+        }
+
+        .combo-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            font-weight: 900;
+            z-index: 150;
+            animation: comboAnim 1.2s ease-out forwards;
+            pointer-events: none;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px var(--primary-purple));
+        }
+
+        @keyframes comboAnim {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-10deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3) rotate(5deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -120%) scale(1) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        .biome-transition {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            font-weight: 900;
+            z-index: 150;
+            padding: 30px 60px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 3px solid var(--primary-cyan);
+            border-radius: 20px;
+            box-shadow: 0 0 60px var(--primary-cyan);
+            animation: biomeAnim 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes biomeAnim {
+            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .top-bar {
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            cursor: pointer;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            gap: 10px;
             z-index: 100;
+        }
+
+        .icon-btn {
+            width: 50px;
+            height: 50px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             transition: all 0.3s ease;
+            pointer-events: all;
         }
 
-        .pause-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(1.05);
+        .icon-btn:hover {
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 20px var(--primary-cyan);
+            transform: translateY(-2px);
         }
 
-        .pause-icon {
+        .icon-btn svg {
             width: 24px;
             height: 24px;
             fill: white;
         }
 
-        .particle {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 50;
+        /* Scrollbar styling */
+        .menu-content::-webkit-scrollbar {
+            width: 10px;
         }
 
-        @keyframes particleFade {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
-                opacity: 0;
-            }
+        .menu-content::-webkit-scrollbar-track {
+            background: var(--glass-bg);
+            border-radius: 10px;
         }
 
-        .combo-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 3em;
+        .menu-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            border-radius: 10px;
+        }
+
+        .instruction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+        }
+
+        .instruction-key {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            border-radius: 8px;
+            margin-right: 15px;
             font-weight: bold;
-            color: #ffd700;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-            z-index: 150;
-            animation: comboAnim 1s ease-out forwards;
-            pointer-events: none;
+            min-width: 80px;
+            text-align: center;
+            box-shadow: 0 0 15px var(--primary-purple);
         }
 
-        @keyframes comboAnim {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.2);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -100%) scale(1);
-                opacity: 0;
-            }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-screen.hidden {
+            display: none;
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 8px;
+            background: var(--glass-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+        }
+
+        .loading-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-pink), var(--primary-purple), var(--primary-cyan));
+            animation: loading 2s ease-in-out forwards;
+        }
+
+        @keyframes loading {
+            to { width: 100%; }
         }
     </style>
 </head>
 <body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="menu-title">RETROWAVE RUNNER</div>
+        <div class="loading-bar">
+            <div class="loading-fill"></div>
+        </div>
+    </div>
+
+    <div class="scanlines"></div>
     <canvas id="gameCanvas"></canvas>
 
     <!-- HUD -->
@@ -317,82 +800,252 @@
         </div>
         <div class="hud-item">
             <div class="hud-label">Coins</div>
-            <div class="hud-value coins" id="coins">0</div>
+            <div class="hud-value" id="coins">0</div>
         </div>
         <div class="hud-item">
             <div class="hud-label">Distance</div>
-            <div class="hud-value distance" id="distance">0m</div>
+            <div class="hud-value" id="distance">0m</div>
+        </div>
+        <div class="hud-item">
+            <div class="hud-label">Combo</div>
+            <div class="hud-value" id="combo">0x</div>
         </div>
     </div>
 
-    <!-- Pause Button -->
-    <button class="pause-btn" id="pauseBtn">
-        <svg class="pause-icon" viewBox="0 0 24 24">
-            <rect x="6" y="4" width="4" height="16" rx="1"/>
-            <rect x="14" y="4" width="4" height="16" rx="1"/>
-        </svg>
-    </button>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <button class="icon-btn" id="settingsBtn" title="Settings">
+            <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+        </button>
+        <button class="icon-btn" id="pauseBtn" title="Pause">
+            <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+    </div>
+
+    <!-- Powerup Indicator -->
+    <div class="powerup-indicator hidden" id="powerupIndicator">
+        <div class="powerup-name" id="powerupName">Shield Active</div>
+        <div class="powerup-timer">
+            <div class="powerup-timer-fill" id="powerupTimer"></div>
+        </div>
+    </div>
 
     <!-- Controls Hint -->
     <div class="controls-hint" id="controlsHint">
-        Use ← → to move | ↑ to jump | ↓ to slide
+        ← → Move • ↑ SPACE Jump • ↓ Slide
     </div>
 
     <!-- Start Menu -->
     <div class="menu-overlay" id="startMenu">
         <div class="menu-content">
-            <div class="menu-title">🏃 Temple Run 3D</div>
-            <div class="menu-subtitle">Endless Runner Adventure</div>
+            <div class="menu-title">RETROWAVE RUNNER</div>
+            <div class="menu-subtitle">Synthwave Endless Adventure</div>
 
-            <div class="menu-instructions">
-                <div class="instruction-item">
-                    <span class="instruction-key">← →</span>
-                    <span>Move Left/Right</span>
+            <div class="tabs">
+                <button class="tab active" data-tab="play">Play</button>
+                <button class="tab" data-tab="customize">Customize</button>
+                <button class="tab" data-tab="settings">Settings</button>
+            </div>
+
+            <div class="tab-content active" id="play-tab">
+                <div class="instruction-grid">
+                    <div class="instruction-item">
+                        <span class="instruction-key">← →</span>
+                        <span>Move Left/Right</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="instruction-key">↑ SPACE</span>
+                        <span>Jump</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="instruction-key">↓</span>
+                        <span>Slide</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="instruction-key">ESC</span>
+                        <span>Pause Game</span>
+                    </div>
                 </div>
-                <div class="instruction-item">
-                    <span class="instruction-key">↑ SPACE</span>
-                    <span>Jump</span>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Best Score</div>
+                        <div class="stat-value" id="menuBestScore">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Coins</div>
+                        <div class="stat-value" id="totalCoins">0</div>
+                    </div>
                 </div>
-                <div class="instruction-item">
-                    <span class="instruction-key">↓</span>
-                    <span>Slide</span>
-                </div>
-                <div class="instruction-item">
-                    <span class="instruction-key">ESC</span>
-                    <span>Pause</span>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="startGame()">Start Game</button>
                 </div>
             </div>
 
-            <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+            <div class="tab-content" id="customize-tab">
+                <div class="settings-section">
+                    <div class="settings-title">Choose Your Character</div>
+                    <div class="character-grid">
+                        <div class="character-option selected" data-character="cube">
+                            <div class="character-icon">🔷</div>
+                            <div class="character-name">Classic</div>
+                        </div>
+                        <div class="character-option" data-character="sphere">
+                            <div class="character-icon">🔮</div>
+                            <div class="character-name">Sphere</div>
+                        </div>
+                        <div class="character-option" data-character="pyramid">
+                            <div class="character-icon">🔺</div>
+                            <div class="character-name">Pyramid</div>
+                        </div>
+                        <div class="character-option" data-character="star">
+                            <div class="character-icon">⭐</div>
+                            <div class="character-name">Star</div>
+                        </div>
+                        <div class="character-option" data-character="crystal">
+                            <div class="character-icon">💎</div>
+                            <div class="character-name">Crystal</div>
+                        </div>
+                        <div class="character-option" data-character="neon">
+                            <div class="character-icon">✨</div>
+                            <div class="character-name">Neon</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">Select Biome</div>
+                    <div class="biome-grid">
+                        <div class="biome-option selected" data-biome="cybercity">
+                            <div class="character-icon">🌃</div>
+                            <div class="character-name">Cyber City</div>
+                        </div>
+                        <div class="biome-option" data-biome="neonforest">
+                            <div class="character-icon">🌲</div>
+                            <div class="character-name">Neon Forest</div>
+                        </div>
+                        <div class="biome-option" data-biome="spacestation">
+                            <div class="character-icon">🚀</div>
+                            <div class="character-name">Space Station</div>
+                        </div>
+                        <div class="biome-option" data-biome="sunset">
+                            <div class="character-icon">🌅</div>
+                            <div class="character-name">Sunset Drive</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="settings-tab">
+                <div class="settings-section">
+                    <div class="settings-title">Visual Settings</div>
+
+                    <div class="setting-item">
+                        <span>Dark Mode</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <span>Scanlines Effect</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="scanlinesToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <span>Particle Effects</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="particlesToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <span>Camera Shake</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="cameraShakeToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">Gameplay Settings</div>
+
+                    <div class="setting-item">
+                        <span>Game Speed</span>
+                        <div class="slider-input">
+                            <input type="range" id="speedSlider" min="50" max="150" value="100">
+                            <span id="speedValue">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <span>Difficulty</span>
+                        <div class="slider-input">
+                            <input type="range" id="difficultySlider" min="1" max="3" value="2">
+                            <span id="difficultyValue">Normal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">Audio Settings</div>
+
+                    <div class="setting-item">
+                        <span>Sound Effects</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="sfxToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <span>Background Music</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="musicToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Pause Menu -->
     <div class="menu-overlay hidden" id="pauseMenu">
         <div class="menu-content">
-            <div class="menu-title">⏸️ Paused</div>
-            <button class="btn btn-primary" onclick="resumeGame()">Resume</button>
-            <button class="btn btn-secondary" onclick="restartGame()">Restart</button>
+            <div class="menu-title">⏸️ PAUSED</div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="resumeGame()">Resume</button>
+                <button class="btn btn-secondary" onclick="restartGame()">Restart</button>
+                <button class="btn btn-secondary" onclick="backToMenu()">Main Menu</button>
+            </div>
         </div>
     </div>
 
     <!-- Game Over Menu -->
     <div class="menu-overlay hidden" id="gameOverMenu">
         <div class="menu-content">
-            <div class="menu-title">Game Over!</div>
+            <div class="menu-title">GAME OVER</div>
 
-            <div class="game-over-stats">
+            <div class="stats-grid">
                 <div class="stat-box">
                     <div class="stat-label">Final Score</div>
                     <div class="stat-value" id="finalScore">0</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Coins Collected</div>
-                    <div class="stat-value coins" id="finalCoins">0</div>
+                    <div class="stat-value" id="finalCoins">0</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Distance</div>
-                    <div class="stat-value distance" id="finalDistance">0m</div>
+                    <div class="stat-value" id="finalDistance">0m</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Best Score</div>
@@ -400,8 +1053,10 @@
                 </div>
             </div>
 
-            <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
-            <button class="btn btn-secondary" onclick="backToMenu()">Main Menu</button>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+                <button class="btn btn-secondary" onclick="backToMenu()">Main Menu</button>
+            </div>
         </div>
     </div>
 
