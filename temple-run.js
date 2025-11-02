@@ -1,9 +1,8 @@
-// Three.js aliases
-const Engine = Matter?.Engine;
-const { Scene, PerspectiveCamera, WebGLRenderer, AmbientLight, DirectionalLight, HemisphereLight, PointLight,
-    Mesh, Group, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, OctahedronGeometry, TetrahedronGeometry,
-    MeshPhongMaterial, MeshStandardMaterial, MeshBasicMaterial,
-    Fog, Color, Box3, Vector3, Clock } = THREE;
+// Three.js aliases - will be initialized when THREE is loaded
+let Scene, PerspectiveCamera, WebGLRenderer, AmbientLight, DirectionalLight, HemisphereLight, PointLight;
+let Mesh, Group, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, OctahedronGeometry, TetrahedronGeometry;
+let MeshPhongMaterial, MeshStandardMaterial, MeshBasicMaterial;
+let Fog, Color, Box3, Vector3, Clock;
 
 // Game state
 let scene, camera, renderer, clock;
@@ -120,6 +119,17 @@ let keys = {};
 
 // Initialize game
 function init() {
+    // Initialize Three.js classes
+    if (typeof THREE !== 'undefined') {
+        ({ Scene, PerspectiveCamera, WebGLRenderer, AmbientLight, DirectionalLight, HemisphereLight, PointLight,
+            Mesh, Group, BoxGeometry, SphereGeometry, CylinderGeometry, TorusGeometry, OctahedronGeometry, TetrahedronGeometry,
+            MeshPhongMaterial, MeshStandardMaterial, MeshBasicMaterial,
+            Fog, Color, Box3, Vector3, Clock } = THREE);
+    } else {
+        console.error('THREE.js failed to load!');
+        return;
+    }
+
     // Hide loading screen
     setTimeout(() => {
         document.getElementById('loadingScreen').classList.add('hidden');
