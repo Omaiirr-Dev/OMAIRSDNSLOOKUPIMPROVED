@@ -773,20 +773,18 @@
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, var(--primary-pink), var(--primary-purple), var(--primary-cyan));
-            animation: loading 2s ease-in-out forwards;
-        }
-
-        @keyframes loading {
-            to { width: 100%; }
+            transition: width 0.3s ease;
         }
     </style>
 </head>
 <body>
     <div class="loading-screen" id="loadingScreen">
         <div class="menu-title">RETROWAVE RUNNER</div>
+        <p id="loadingStatus" style="color: var(--primary-cyan); margin: 20px 0; text-align: center;">Initializing...</p>
         <div class="loading-bar">
-            <div class="loading-fill"></div>
+            <div class="loading-fill" id="loadingFill"></div>
         </div>
+        <p id="loadingDetails" style="color: rgba(255,255,255,0.5); margin: 20px 0; text-align: center; font-size: 0.9em;"></p>
     </div>
 
     <div class="scanlines"></div>
@@ -1061,59 +1059,111 @@
     </div>
 
     <script>
+        // Loading progress tracker
+        const loadingStatus = document.getElementById('loadingStatus');
+        const loadingDetails = document.getElementById('loadingDetails');
+        const loadingFill = document.getElementById('loadingFill');
+
+        function updateLoading(status, details, progress) {
+            loadingStatus.textContent = status;
+            loadingDetails.textContent = details;
+            if (progress !== undefined) {
+                loadingFill.style.width = progress + '%';
+                loadingFill.style.animation = 'none';
+            }
+        }
+
+        // Make updateLoading available globally
+        window.updateLoading = updateLoading;
+
         // Try multiple CDN sources for Three.js
         (function loadThreeJS() {
+            updateLoading('Loading Three.js Library...', 'Trying multiple sources...', 10);
+
             const cdns = [
-                './three.min.js', // Try local file first
-                'three.min.js',   // Try current directory
-                'https://unpkg.com/three@0.128.0/build/three.min.js',
-                'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
+                { url: './three.min.js', name: 'Local File' },
+                { url: 'three.min.js', name: 'Current Directory' },
+                { url: 'https://unpkg.com/three@0.128.0/build/three.min.js', name: 'unpkg CDN' },
+                { url: 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js', name: 'jsDelivr CDN' },
+                { url: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', name: 'Cloudflare CDN' }
             ];
 
             let currentIndex = 0;
 
             function tryLoadScript() {
                 if (currentIndex >= cdns.length) {
+                    updateLoading('❌ Loading Failed', '', 0);
                     document.getElementById('loadingScreen').innerHTML = `
-                        <div class="menu-title">Loading Failed</div>
-                        <p style="color: var(--primary-cyan); text-align: center; max-width: 600px; margin: 20px auto;">
-                            Could not load Three.js library. Please check your internet connection.<br><br>
-                            Or download three.min.js manually from:<br>
-                            <a href="https://threejs.org/build/three.min.js" style="color: var(--primary-pink);">
-                                https://threejs.org/build/three.min.js
-                            </a><br>
-                            and place it in the same folder as this HTML file.
-                        </p>`;
+                        <div class="menu-title">❌ Loading Failed</div>
+                        <p style="color: var(--primary-pink); text-align: center; max-width: 600px; margin: 20px auto; font-size: 1.2em;">
+                            Could not load Three.js library from any source.
+                        </p>
+                        <div style="text-align: left; max-width: 600px; margin: 20px auto; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                            <h3 style="color: var(--primary-cyan); margin-bottom: 15px;">Solutions:</h3>
+                            <p style="margin: 10px 0;">1. <strong>Download Three.js manually:</strong></p>
+                            <p style="margin: 10px 0 10px 20px;">
+                                <a href="https://threejs.org/build/three.min.js" target="_blank" style="color: var(--primary-cyan);">
+                                    Download three.min.js
+                                </a> and place it in the same folder as this HTML file.
+                            </p>
+                            <p style="margin: 10px 0;">2. <strong>Use GitHub Pages:</strong></p>
+                            <p style="margin: 10px 0 10px 20px;">Host this game on GitHub Pages to avoid CDN issues.</p>
+                            <p style="margin: 10px 0;">3. <strong>Check your internet connection</strong></p>
+                        </div>
+                        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">Try Again</button>
+                    `;
                     return;
                 }
 
+                const cdn = cdns[currentIndex];
+                updateLoading('Loading Three.js...', `Trying ${cdn.name}...`, 20 + (currentIndex * 15));
+
                 const script = document.createElement('script');
-                script.src = cdns[currentIndex];
+                script.src = cdn.url;
+
                 script.onload = () => {
-                    console.log('Three.js loaded from:', cdns[currentIndex]);
-                    loadGameScript();
+                    console.log('✅ Three.js loaded from:', cdn.name);
+                    updateLoading('Three.js Loaded!', `Source: ${cdn.name}`, 50);
+                    setTimeout(() => loadGameScript(), 500);
                 };
+
                 script.onerror = () => {
-                    console.warn('Failed to load from:', cdns[currentIndex]);
+                    console.warn('❌ Failed to load from:', cdn.name);
                     currentIndex++;
                     tryLoadScript();
                 };
+
                 document.head.appendChild(script);
             }
 
             function loadGameScript() {
+                updateLoading('Loading Game Code...', 'temple-run.js', 60);
+
                 const gameScript = document.createElement('script');
                 gameScript.src = 'temple-run.js';
-                gameScript.onerror = () => {
-                    document.getElementById('loadingScreen').innerHTML = `
-                        <div class="menu-title">Error</div>
-                        <p style="color: var(--primary-cyan);">Could not load temple-run.js</p>`;
+
+                gameScript.onload = () => {
+                    console.log('✅ Game script loaded');
+                    updateLoading('Initializing Game...', 'Setting up 3D scene...', 80);
                 };
+
+                gameScript.onerror = () => {
+                    updateLoading('❌ Error', 'Could not load temple-run.js', 0);
+                    document.getElementById('loadingScreen').innerHTML = `
+                        <div class="menu-title">❌ Error</div>
+                        <p style="color: var(--primary-pink); text-align: center; max-width: 600px; margin: 20px auto;">
+                            Could not load temple-run.js<br><br>
+                            Make sure the file is in the same directory as this HTML file.
+                        </p>
+                        <button onclick="location.reload()" class="btn btn-primary">Try Again</button>
+                    `;
+                };
+
                 document.body.appendChild(gameScript);
             }
 
-            tryLoadScript();
+            // Start loading
+            setTimeout(() => tryLoadScript(), 500);
         })();
     </script>
 </body>
